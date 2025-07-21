@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: vproapp
-        image: ironman13/vproapp
+        image: ironman13/vprofileapp
         ports:
         - name: app-port
           containerPort: 8080
