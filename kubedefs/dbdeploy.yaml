@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vprodb
+  labels:
+    app: vprodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vprodb
+  template:
+    metadata:
+      labels:
+        app: vprodb
+    spec:
+      # The squiggly line appears because the 'containers' section requires at least one resource request/limit to be specified
+# Best practice is to always specify resource requests and limits for containers
+# Add resource requests/limits like:
+      containers:
+      - name: vprodb
+        image: ironman13/vprofiledb
+        ports:
+        - name: vprodb-port
+          containerPort: 3306
+        env: 
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: db-pass
+        volumeMounts:
+        - name: db-storage
+          mountPath: /var/lib/mysql
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi" 
+            cpu: "500m"      
+      volumes:
+      - name: db-storage
+        persistentVolumeClaim:
+          claimName: db-pv-claim
+      initContainers:
+      - name: busybox
+        image: busybox
+        args: ["rm", "-rf", "/var/lib/mysql/*"]
+        volumeMounts:
+        - name: db-storage
+          mountPath: /var/lib/mysql
